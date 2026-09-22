@@ -5,7 +5,7 @@
 ;(function () {
   if (typeof window === "undefined") return
 
-  // Determine API base URL automatically from currentScript src
+  // Determine API base URL automatically from currentScript src or data-api
   var currentScript =
     document.currentScript ||
     (function () {
@@ -14,55 +14,80 @@
     })()
 
   var apiBase = ""
-  if (currentScript && currentScript.src) {
-    var a = document.createElement("a")
-    a.href = currentScript.src
-    apiBase = a.protocol + "//" + a.host
-    if (currentScript.getAttribute("data-api")) {
+  if (currentScript) {
+    if (currentScript.getAttribute && currentScript.getAttribute("data-api")) {
       apiBase = currentScript.getAttribute("data-api")
+    } else if (currentScript.src) {
+      var a = document.createElement("a")
+      a.href = currentScript.src
+      apiBase = a.protocol + "//" + a.host
     }
   }
 
-  var bszTag = {
+  var tag = {
+    keys: ["site_pv", "page_pv", "site_uv", "page_uv"],
     bszs: ["site_pv", "page_pv", "site_uv", "page_uv"],
     texts: function (data) {
-      this.bszs.forEach(function (key) {
-        var el = document.getElementById("busuanzi_value_" + key)
-        if (el && data[key] !== undefined) {
-          el.innerHTML = String(data[key])
+      if (!data) return
+      var keys = (this && (this.keys || this.bszs)) || ["site_pv", "page_pv", "site_uv", "page_uv"]
+      keys.forEach(function (key) {
+        if (data[key] !== undefined) {
+          var selector =
+            '[data-counter="' + key + '"], ' +
+            '[data-counter-value="' + key + '"], ' +
+            '#counter_value_' + key + ', ' +
+            '.counter_value_' + key + ', ' +
+            '#busuanzi_value_' + key + ', ' +
+            '[data-busuanzi-value="' + key + '"]'
+          var elements = document.querySelectorAll(selector)
+          for (var i = 0; i < elements.length; i++) {
+            elements[i].innerHTML = String(data[key])
+          }
         }
       })
     },
     shows: function () {
-      this.bszs.forEach(function (key) {
-        var el = document.getElementById("busuanzi_container_" + key)
-        if (el) {
-          el.style.display = "inline-flex"
+      var keys = (this && (this.keys || this.bszs)) || ["site_pv", "page_pv", "site_uv", "page_uv"]
+      keys.forEach(function (key) {
+        var selector =
+          '[data-counter-container="' + key + '"], ' +
+          '#counter_container_' + key + ', ' +
+          '.counter_container_' + key + ', ' +
+          '#busuanzi_container_' + key
+        var elements = document.querySelectorAll(selector)
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].style.display = "inline-flex"
         }
       })
     },
     hides: function () {
-      this.bszs.forEach(function (key) {
-        var el = document.getElementById("busuanzi_container_" + key)
-        if (el) {
-          el.style.display = "none"
+      var keys = (this && (this.keys || this.bszs)) || ["site_pv", "page_pv", "site_uv", "page_uv"]
+      keys.forEach(function (key) {
+        var selector =
+          '[data-counter-container="' + key + '"], ' +
+          '#counter_container_' + key + ', ' +
+          '.counter_container_' + key + ', ' +
+          '#busuanzi_container_' + key
+        var elements = document.querySelectorAll(selector)
+        for (var i = 0; i < elements.length; i++) {
+          elements[i].style.display = "none"
         }
       })
     }
   }
 
-  var bszCaller = {
+  var caller = {
     fetch: function (customUrl, callback) {
       var callbackName = "CounterCallback_" + Math.floor(1099511627776 * Math.random())
-      var targetUrl = (customUrl || apiBase || "") + "/?jsonpCallback=" + callbackName
+      var targetUrl = (customUrl || apiBase || "").replace(/\/+$/, "") + "/?jsonpCallback=" + callbackName
 
       window[callbackName] = function (data) {
         try {
           if (callback && typeof callback === "function") {
             callback(data)
           } else {
-            bszTag.texts(data)
-            bszTag.shows()
+            tag.texts(data)
+            tag.shows()
           }
         } finally {
           try {
@@ -97,15 +122,21 @@
     }
   }
 
-  window.bszTag = bszTag
-  window.bszCaller = bszCaller
+  window.Counter = {
+    tag: tag,
+    caller: caller,
+    fetch: caller.fetch,
+    version: "1.0.0"
+  }
+  window.bszTag = tag
+  window.bszCaller = caller
 
   // Initial fetch on DOM ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () {
-      bszCaller.fetch()
+      caller.fetch()
     })
   } else {
-    bszCaller.fetch()
+    caller.fetch()
   }
 })()
