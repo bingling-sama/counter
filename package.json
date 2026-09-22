@@ -1,0 +1,28 @@
+{
+  "name": "counter",
+  "version": "1.0.0",
+  "description": "Privacy-friendly, adblocker-proof, Busuanzi-compatible visitor counter on Cloudflare Workers and D1",
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "db:init:local": "wrangler d1 execute counter-db --local --file=schema.sql",
+    "db:init:remote": "wrangler d1 execute counter-db --remote --file=schema.sql"
+  },
+  "keywords": [
+    "busuanzi",
+    "counter",
+    "cloudflare-worker",
+    "d1",
+    "analytics"
+  ],
+  "author": "Booling",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241022.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.83.0"
+  }
+}
