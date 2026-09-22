@@ -4,10 +4,14 @@ compatibility_date = "2024-10-22"
 compatibility_flags = ["nodejs_compat"]
 
 # D1 Database binding
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "counter-db"
+# database_id = "YOUR_D1_DATABASE_ID"
 [[d1_databases]]
-binding = "DB"
+binding = "counter_db"
 database_name = "counter-db"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "6f72651a-e4df-46ad-a02a-97e4d410df16"
 
 # Assets / Public folder for client scripts like counter.js
 [site]

@@ -1,8 +1,7 @@
 export interface Env {
-  DB: D1Database
-  // Optional secret key for admin APIs (e.g. updating offsets)
+  DB?: D1Database
+  counter_db?: D1Database
   ADMIN_TOKEN?: string
-  // Optional allowed origins (comma separated or * for any)
   ALLOWED_ORIGINS?: string
 }
 

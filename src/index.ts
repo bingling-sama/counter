@@ -24,6 +24,14 @@ export default {
       })
     }
 
+    const db = env.DB || env.counter_db
+    if (!db) {
+      return new Response(
+        JSON.stringify({ error: "D1 database binding (DB or counter_db) not configured" }),
+        { status: 500, headers: { ...cors, "Content-Type": "application/json" } }
+      )
+    }
+
     if (url.pathname === "/api/admin/offset" && request.method === "POST") {
       const authHeader = request.headers.get("Authorization")
       if (!env.ADMIN_TOKEN || authHeader !== `Bearer ${env.ADMIN_TOKEN}`) {
@@ -49,7 +57,7 @@ export default {
         }
 
         await setOffset(
-          env.DB,
+          db,
           body.domain.toLowerCase(),
           body.path || null,
           Number(body.offset_pv || 0),
@@ -85,7 +93,7 @@ export default {
         })
       }
 
-      const overview = await getDomainOverview(env.DB, domain.toLowerCase())
+      const overview = await getDomainOverview(db, domain.toLowerCase())
       return new Response(JSON.stringify(overview), {
         status: 200,
         headers: { ...cors, "Content-Type": "application/json" }
@@ -125,7 +133,7 @@ export default {
       const shouldRecord = url.searchParams.get("record") !== "false"
 
       const stats = await recordAndGetStats(
-        env.DB,
+        db,
         target.domain,
         target.path,
         visitorHash,
